@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <headers.h>
 #include <Wire.h>
-#include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
@@ -10,37 +9,40 @@
 
 Adafruit_BME280 bme;
 
-unsigned long startTime;
+unsigned long lastTime;
 unsigned long currentTime;
 unsigned long delayTime = 1000;
 
 void setup() {
-Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println(F("Waterboei"));
+    Wire.begin(BME_SDA, BME_SCL);
 
     if (!bme.begin(0x77, &Wire)) { // could be 0x76
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        while (1);
+        while (true) {
+            delay(1000);
+        }
     }
-    startTime = millis();
+    lastTime = millis();
 }
 
 void loop() {
     currentTime = millis();
-    if (currentTime - startTime >= delayTime) {
+    if (currentTime - lastTime >= delayTime) {
+        lastTime = currentTime;
         BMEValues();
-        startTime = currentTime;
     }
 }
 
 void BMEValues() {
-    Serial.print("Temperature: ");
+    Serial.print("Temperatuur: ");
     Serial.print(bme.readTemperature());
     Serial.println("°C");
-    Serial.print("Humidity: ");
+    Serial.print("Luchtvochtigheid: ");
     Serial.print(bme.readHumidity());
     Serial.println("%");
-    Serial.print("Pressure: ");
+    Serial.print("Luchtdruk: ");
     Serial.print(bme.readPressure() / 100.0F);
     Serial.println("hPa");
 }
