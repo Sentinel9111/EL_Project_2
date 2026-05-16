@@ -15,10 +15,12 @@ unsigned long delayTime = 1000;
 
 void setup() {
     Serial.begin(115200);
+    // pio run -t upload -t monitor
+    delay(1000);
     Serial.println(F("Waterboei"));
     Wire.begin(BME_SDA, BME_SCL);
 
-    if (!bme.begin(0x77, &Wire)) { // could be 0x76
+    if (!bme.begin(0x76, &Wire)) { // could be 0x77
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
         while (true) {
             delay(1000);
