@@ -11,7 +11,7 @@
 #define BME_SCL 22
 #define BME_SDA 21
 
-#define DATAPOINTS 64
+#define DATAPOINTS 256
 
 Adafruit_BME280 bme;
 AsyncWebServer server(80);
@@ -22,11 +22,10 @@ float pressureHistory[DATAPOINTS];
 int historyIndex = 0;
 unsigned long lastTime;
 unsigned long currentTime;
-unsigned long delayTime = 1000;
+unsigned long delayTime = 5000;
 
 void setup() {
     Serial.begin(115200);
-    // pio run -t upload -t monitor
     delay(1000);
     Serial.println(F("Waterboei"));
     Wire.begin(BME_SDA, BME_SCL);
@@ -58,7 +57,7 @@ void loop() {
 
 void setupWifi() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.println("Connecting");
+    Serial.print("Connecting");
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
@@ -70,7 +69,7 @@ void setupServer() {
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
     server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
-        json += "\"temperature\":" + String(bme.readTemperature(), 1) + ",";
+        json += "\"temperatuur\":" + String(bme.readTemperature(), 1) + ",";
         json += "\"luchtvochtigheid\":" + String(bme.readHumidity(), 1) + ",";
         json += "\"luchtdruk\":" + String(bme.readPressure() / 100.0F, 1) + ",";
         json += "\"temperatureHistory\":[";
@@ -108,13 +107,13 @@ void BMEValues() {
     historyIndex++;
 
     // print sensors to serial
-    Serial.print("Temperatuur: ");
-    Serial.print(temperature);
-    Serial.println("°C");
-    Serial.print("Luchtvochtigheid: ");
-    Serial.print(humidity);
-    Serial.println("%");
-    Serial.print("Luchtdruk: ");
-    Serial.print(pressure / 100.0F);
-    Serial.println("hPa");
+    // Serial.print("Temperatuur: ");
+    // Serial.print(temperature);
+    // Serial.println("°C");
+    // Serial.print("Luchtvochtigheid: ");
+    // Serial.print(humidity);
+    // Serial.println("%");
+    // Serial.print("Luchtdruk: ");
+    // Serial.print(pressure / 100.0F);
+    // Serial.println("hPa");
 }

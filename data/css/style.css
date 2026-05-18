@@ -1,3 +1,8 @@
 .sensor-card {
     cursor: pointer;
 }
+
+.sensor-card:hover {
+    border-color: #0f2044;
+    transform: translateY(-2px);
+}
