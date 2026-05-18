@@ -33,6 +33,10 @@ function updateChart() {
         chart.data.datasets[0].data = history;
         chart.data.datasets[0].label = ds.label;
         chart.data.datasets[0].borderColor = ds.color;
+        chart.options.scales.y.beginAtZero = ds.beginAtZero;
+        chart.options.scales.y.grace = ds.grace;
+        chart.options.scales.y.suggestedMax = ds.suggestedMax;
+        chart.options.scales.y.ticks.stepSize = ds.stepSize;
         chart.update();
     } else {
         const ctx = document.getElementById("sensorChart").getContext("2d");
@@ -52,7 +56,16 @@ function updateChart() {
             options: {
                 responsive: true,
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: false } }
+                scales: {
+                    y: {
+                        beginAtZero: ds.beginAtZero,
+                        grace: ds.grace,
+                        suggestedMax: ds.suggestedMax,
+                        ticks: {
+                            stepSize: ds.stepSize
+                        }
+                    }
+                }
             }
         });
     }
