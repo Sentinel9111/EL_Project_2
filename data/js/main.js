@@ -2,9 +2,9 @@ let chart = null;
 let sensorData = null;
 
 const datasets = {
-    temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", stepSize: 0.1 , color: "#ff6384", grace: "5%" },
-    luchtvochtigheid: { label: "Luchtvochtigheid (%)", key: "humidityHistory", color: "#36a2eb", stepSize: 0.1, beginAtZero: true, suggestedMax: "100" },
-    luchtdruk: { label: "Luchtdruk (hPa)", key: "pressureHistory", color: "#4bc0c0", stepSize: 0.1, grace: "10%" },
+    temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", precision: 1, color: "#ff6384", grace: "5%" },
+    luchtvochtigheid: { label: "Luchtvochtigheid (%)", key: "humidityHistory", color: "#36a2eb", precision: 0, beginAtZero: true, suggestedMax: 100 },
+    luchtdruk: { label: "Luchtdruk (hPa)", key: "pressureHistory", color: "#4bc0c0", precision: 0, grace: "10%" },
 };
 
 let activeDataset = "temperatuur";
@@ -36,7 +36,7 @@ function updateChart() {
         chart.options.scales.y.beginAtZero = ds.beginAtZero;
         chart.options.scales.y.grace = ds.grace;
         chart.options.scales.y.suggestedMax = ds.suggestedMax;
-        chart.options.scales.y.ticks.stepSize = ds.stepSize;
+        chart.options.scales.y.ticks.precision = ds.precision;
         chart.update();
     } else {
         const ctx = document.getElementById("sensorChart").getContext("2d");
@@ -62,7 +62,7 @@ function updateChart() {
                         grace: ds.grace,
                         suggestedMax: ds.suggestedMax,
                         ticks: {
-                            stepSize: ds.stepSize
+                            precision: ds.precision
                         }
                     }
                 }
