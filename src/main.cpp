@@ -73,8 +73,8 @@ void setupServer() {
     server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
         json += "\"temperatuur\":" + String(bme.readTemperature(), 1) + ",";
-        json += "\"luchtvochtigheid\":" + String(bme.readHumidity(), 1) + ",";
-        json += "\"luchtdruk\":" + String(bme.readPressure() / 100.0F, 1) + ",";
+        json += "\"luchtvochtigheid\":" + String(bme.readHumidity(), 0) + ",";
+        json += "\"luchtdruk\":" + String(bme.readPressure() / 100.0F, 0) + ",";
         json += "\"temperatureHistory\":[";
         int count = min(historyIndex, DATAPOINTS);
         int start = historyIndex >= DATAPOINTS ? historyIndex % DATAPOINTS : 0;
@@ -85,12 +85,12 @@ void setupServer() {
         json += "],\"humidityHistory\":[";
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(humidityHistory[(start + i) % DATAPOINTS], 1);
+            json += String(humidityHistory[(start + i) % DATAPOINTS], 0);
         }
         json += "],\"pressureHistory\":[";
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(pressureHistory[(start + i) % DATAPOINTS], 1);
+            json += String(pressureHistory[(start + i) % DATAPOINTS], 0);
         }
         json += "],\"timestamps\":[";
         for (int i = 0; i < count; i++) {
@@ -108,7 +108,7 @@ void setupServer() {
 void BMEValues() {
     float temperature = bme.readTemperature();
     float humidity = bme.readHumidity();
-    float pressure = bme.readPressure();
+    float pressure = bme.readPressure() / 100.0F;
 
     temperatureHistory[historyIndex % DATAPOINTS] = temperature;
     humidityHistory[historyIndex % DATAPOINTS] = humidity;

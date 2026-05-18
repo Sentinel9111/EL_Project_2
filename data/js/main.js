@@ -2,9 +2,9 @@ let chart = null;
 let sensorData = null;
 
 const datasets = {
-    temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", precision: 1, color: "#ff6384", grace: "5%" },
+    temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", color: "#ff6384", precision: 1, stepSize: 0.1 },
     luchtvochtigheid: { label: "Luchtvochtigheid (%)", key: "humidityHistory", color: "#36a2eb", precision: 0, beginAtZero: true, suggestedMax: 100 },
-    luchtdruk: { label: "Luchtdruk (hPa)", key: "pressureHistory", color: "#4bc0c0", precision: 0, grace: "10%" },
+    luchtdruk: { label: "Luchtdruk (hPa)", key: "pressureHistory", color: "#4bc0c0", precision: 0},
 };
 
 let activeDataset = "temperatuur";
@@ -25,8 +25,11 @@ function updateChart() {
     if (!sensorData) return;
 
     const ds = datasets[activeDataset];
-    const history = sensorData[ds.key];
+    let history = sensorData[ds.key];
     const labels = sensorData.timestamps.map(h => "T+" + h + "u");
+    history = history.map(value => {
+        return parseFloat(Number(value).toFixed(ds.precision))
+    })
 
     if (chart) {
         chart.data.labels = labels;
@@ -34,9 +37,9 @@ function updateChart() {
         chart.data.datasets[0].label = ds.label;
         chart.data.datasets[0].borderColor = ds.color;
         chart.options.scales.y.beginAtZero = ds.beginAtZero;
-        chart.options.scales.y.grace = ds.grace;
         chart.options.scales.y.suggestedMax = ds.suggestedMax;
         chart.options.scales.y.ticks.precision = ds.precision;
+        chart.options.scales.y.ticks.stepSize = ds.stepSize;
         chart.update();
     } else {
         const ctx = document.getElementById("sensorChart").getContext("2d");
@@ -59,10 +62,13 @@ function updateChart() {
                 scales: {
                     y: {
                         beginAtZero: ds.beginAtZero,
-                        grace: ds.grace,
                         suggestedMax: ds.suggestedMax,
                         ticks: {
-                            precision: ds.precision
+                            precision: ds.precision,
+                            stepSize: ds.stepSize,
+                            callback: function(value) {
+                                return parseFloat(value);
+                            }
                         }
                     }
                 }
