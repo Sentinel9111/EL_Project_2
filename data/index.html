@@ -8,7 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
             crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/main.js"></script>
 </head>
 <body>
 <!-- navbar -->
@@ -50,7 +52,7 @@
     </div>
 </nav>
 
-<!-- Advies Cards -->
+<!-- advice cards -->
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-6 mb-3">
@@ -60,8 +62,7 @@
                     <div class="py-3">
                         <span class="badge bg-success text-dark p-3 fs-4">Je kan zwemmen.</span>
                     </div>
-                    <p class="card-text text-muted">De waterkwaliteit is goed. De kans op blauwalg is klein en de
-                        watertemperatuur is aangenaam.</p>
+                    <p class="card-text text-muted">Lorem Ipsum Dolor</p>
                 </div>
                 <div class="card-footer bg-transparent border-success text-success">
                     <small>Benedentekst</small>
@@ -76,8 +77,7 @@
                     <div class="py-3">
                         <span class="badge bg-danger text-dark p-3 fs-4">Je kan niet vissen.</span>
                     </div>
-                    <p class="card-text text-muted">Thom heeft weer radioactief afval in het water gepleurt en alle
-                        vissen zijn hardstikke dood. RIP bozo.</p>
+                    <p class="card-text text-muted">Lorem Ipsum Dolor</p>
                 </div>
                 <div class="card-footer bg-transparent border-danger text-danger">
                     <small>Bodemtekst</small>
@@ -87,28 +87,28 @@
     </div>
 </div>
 
-<!-- Data Cards -->
+<!-- data cards -->
 <div class="container">
     <div class="row text-center mb-4">
         <div class="col-md-4">
-            <div class="card p-3">
+            <div class="card p-3 sensor-card" data-sensor="temperatuur" style="cursor: wait;">
                 <h5>Luchttemperatuur</h5>
-                <p class="status-value">18,5°C</p>
-                <small class="text-success">● Aangenaam</small>
+                <p class="status-value" id="temperatuur">°C</p>
+                <small class="text-success">● Lorem</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3">
+            <div class="card p-3 sensor-card" data-sensor="luchtvochtigheid">
                 <h5>Luchtvochtigheid</h5>
-                <p class="status-value">%</p>
-                <small class="text-success">● Nice</small>
+                <p class="status-value" id="luchtvochtigheid">%</p>
+                <small class="text-success">● Ipsum</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3">
+            <div class="card p-3 sensor-card" data-sensor="luchtdruk">
                 <h5>Luchtdruk</h5>
-                <p class="status-value">hPa</p>
-                <small class="text-warning">● Te warm</small>
+                <p class="status-value" id="luchtdruk">hPa</p>
+                <small class="text-warning">● Dolor</small>
             </div>
         </div>
     </div>
@@ -117,38 +117,35 @@
 <div class="container">
     <div class="row text-center mb-4">
         <div class="col-md-4">
-            <div class="card p-3">
+            <div class="card p-3 sensor-card" data-sensor="watertemperatuur">
                 <h5>Watertemperatuur</h5>
-                <p class="status-value">°C</p>
-                <small class="text-success">● Aangenaam</small>
+                <p class="status-value" id="watertemperatuur">°C</p>
+                <small class="text-success">● Sit</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card p-3">
+            <div class="card p-3 sensor-card" data-sensor="troebelheid">
                 <h5>Troebelheid</h5>
-                <p class="status-value">[UNIT]</p>
-                <small class="text-success">● Nice</small>
+                <p class="status-value" id="troebelheid">[UNIT]</p>
+                <small class="text-success">● Amet</small>
             </div>
         </div>
         <!--            <div class="col-md-4">-->
         <!--                <div class="card p-3">-->
         <!--                    <h5>[PLACEHOLDER]</h5>-->
         <!--                    <p class="status-value">[UNIT]</p>-->
-        <!--                    <small class="text-warning">● Te warm</small>-->
+        <!--                    <small class="text-warning">●, Consectetur</small>-->
         <!--                </div>-->
         <!--            </div>-->
     </div>
 </div>
 
-<!-- grafiek -->
+<!-- graph -->
 <div class="container">
     <div class="col-12">
         <div class="card p-4">
-            <h5>Grafiek afgelopen maand</h5>
-            <div style="height: 300px; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                <p class="text-muted">Hier kunnen misschien nog epiese grafieken komen met chart.js</p>
-                <sub>maar ik moet nog uitzoeken hoe dat werkt</sub>
-            </div>
+            <h5 id="chartTitle">Grafiek</h5>
+            <canvas id="sensorChart"></canvas>
         </div>
     </div>
 </div>
