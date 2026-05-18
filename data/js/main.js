@@ -26,7 +26,7 @@ function updateChart() {
 
     const ds = datasets[activeDataset];
     const history = sensorData[ds.key];
-    const labels = history.map((_, i) => i + 1);
+    const labels = sensorData.timestamps.map(h => "T+" + h + "u");
 
     if (chart) {
         chart.data.labels = labels;

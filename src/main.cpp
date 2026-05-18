@@ -11,7 +11,7 @@
 #define BME_SCL 22
 #define BME_SDA 21
 
-#define DATAPOINTS 256
+#define DATAPOINTS 168 // 168 for 7 days
 
 Adafruit_BME280 bme;
 AsyncWebServer server(80);
@@ -20,9 +20,11 @@ float temperatureHistory[DATAPOINTS];
 float humidityHistory[DATAPOINTS];
 float pressureHistory[DATAPOINTS];
 int historyIndex = 0;
+unsigned long startTime = 0;
 unsigned long lastTime;
 unsigned long currentTime;
-unsigned long delayTime = 5000;
+unsigned long delayTime = 1000; // 3600000 for 1 hour
+unsigned long timestamps[DATAPOINTS];
 
 void setup() {
     Serial.begin(115200);
@@ -44,6 +46,7 @@ void setup() {
 
     setupWifi();
     setupServer();
+    startTime = millis();
     lastTime = millis();
 }
 
@@ -74,19 +77,25 @@ void setupServer() {
         json += "\"luchtdruk\":" + String(bme.readPressure() / 100.0F, 1) + ",";
         json += "\"temperatureHistory\":[";
         int count = min(historyIndex, DATAPOINTS);
+        int start = historyIndex >= DATAPOINTS ? historyIndex % DATAPOINTS : 0;
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(temperatureHistory[i], 1);
+            json += String(temperatureHistory[(start + i) % DATAPOINTS], 1);
         }
         json += "],\"humidityHistory\":[";
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(humidityHistory[i], 1);
+            json += String(humidityHistory[(start + i) % DATAPOINTS], 1);
         }
         json += "],\"pressureHistory\":[";
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(pressureHistory[i], 1);
+            json += String(pressureHistory[(start + i) % DATAPOINTS], 1);
+        }
+        json += "],\"timestamps\":[";
+        for (int i = 0; i < count; i++) {
+            if (i > 0) json += ",";
+            json += String(timestamps[i]);
         }
         json += "]}";
         request->send(200, "application/json", json);
@@ -104,6 +113,8 @@ void BMEValues() {
     temperatureHistory[historyIndex % DATAPOINTS] = temperature;
     humidityHistory[historyIndex % DATAPOINTS] = humidity;
     pressureHistory[historyIndex % DATAPOINTS] = pressure;
+
+    timestamps[historyIndex % DATAPOINTS] = (millis() - startTime) / 1000; // 3600000 for 1 hour
     historyIndex++;
 
     // print sensors to serial

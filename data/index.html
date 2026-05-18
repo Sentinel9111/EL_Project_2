@@ -32,20 +32,6 @@
                 <li class="nav-item">
                     <a class="nav-link" href="test.html">Promotiemateriaal</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false">
-                        Dropdown
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </li>
             </ul>
         </div>
     </div>
@@ -61,10 +47,10 @@
                     <div class="py-3">
                         <span class="badge bg-success text-dark p-3 fs-4">Je kan zwemmen.</span>
                     </div>
-                    <p class="card-text text-muted">Lorem Ipsum Dolor</p>
+                    <p class="card-text text-muted">Risico: %</p>
                 </div>
                 <div class="card-footer bg-transparent border-success text-success">
-                    <small>Benedentekst</small>
+                    <small>Risico stijgt</small>
                 </div>
             </div>
         </div>
@@ -76,10 +62,10 @@
                     <div class="py-3">
                         <span class="badge bg-danger text-dark p-3 fs-4">Je kan niet vissen.</span>
                     </div>
-                    <p class="card-text text-muted">Lorem Ipsum Dolor</p>
+                    <p class="card-text text-muted">Risico: %</p>
                 </div>
                 <div class="card-footer bg-transparent border-danger text-danger">
-                    <small>Bodemtekst</small>
+                    <small>Risico daalt</small>
                 </div>
             </div>
         </div>
@@ -93,21 +79,21 @@
             <div class="card p-3 sensor-card" data-sensor="temperatuur">
                 <h5>Luchttemperatuur</h5>
                 <p class="status-value" id="temperatuur">°C</p>
-                <small class="text-success">●</small>
+                <small class="text-primary">● BME280</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3 sensor-card" data-sensor="luchtvochtigheid">
                 <h5>Luchtvochtigheid</h5>
                 <p class="status-value" id="luchtvochtigheid">%</p>
-                <small class="text-success">●</small>
+                <small class="text-primary">● BME280</small>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3 sensor-card" data-sensor="luchtdruk">
                 <h5>Luchtdruk</h5>
                 <p class="status-value" id="luchtdruk">hPa</p>
-                <small class="text-warning">●</small>
+                <small class="text-primary">● BME280</small>
             </div>
         </div>
     </div>
@@ -115,27 +101,20 @@
 
 <div class="container">
     <div class="row text-center mb-4">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card p-3 sensor-card" data-sensor="watertemperatuur">
                 <h5>Watertemperatuur</h5>
                 <p class="status-value" id="watertemperatuur">°C</p>
-                <small class="text-success">●</small>
+                <small class="text-secondary">●</small>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card p-3 sensor-card" data-sensor="troebelheid">
                 <h5>Troebelheid</h5>
-                <p class="status-value" id="troebelheid">[UNIT]</p>
-                <small class="text-success">●</small>
+                <p class="status-value" id="troebelheid">NTU</p>
+                <small class="text-secondary">●</small>
             </div>
         </div>
-        <!--            <div class="col-md-4">-->
-        <!--                <div class="card p-3">-->
-        <!--                    <h5>[PLACEHOLDER]</h5>-->
-        <!--                    <p class="status-value">[UNIT]</p>-->
-        <!--                    <small class="text-warning">●, Consectetur</small>-->
-        <!--                </div>-->
-        <!--            </div>-->
     </div>
 </div>
 
@@ -143,7 +122,7 @@
 <div class="container">
     <div class="col-12">
         <div class="card p-4">
-            <h5 id="chartTitle">Grafiek</h5>
+            <h5 id="chartTitle">Afgelopen week</h5>
             <canvas id="sensorChart"></canvas>
         </div>
     </div>
