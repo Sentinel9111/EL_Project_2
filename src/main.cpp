@@ -95,7 +95,7 @@ void setupServer() {
         json += "],\"timestamps\":[";
         for (int i = 0; i < count; i++) {
             if (i > 0) json += ",";
-            json += String(timestamps[i]);
+            json += String(timestamps[(start + i) % DATAPOINTS]);
         }
         json += "]}";
         request->send(200, "application/json", json);

@@ -2,9 +2,9 @@ let chart = null;
 let sensorData = null;
 
 const datasets = {
-    temperatuur:    { label: "Luchttemperatuur (°C)", key: "temperatureHistory", color: "#ff6384" },
-    luchtvochtigheid: { label: "Luchtvochtigheid (%)",   key: "humidityHistory",    color: "#36a2eb" },
-    luchtdruk:      { label: "Luchtdruk (hPa)",       key: "pressureHistory",    color: "#4bc0c0" },
+    temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", stepSize: 0.1 , color: "#ff6384", grace: "5%" },
+    luchtvochtigheid: { label: "Luchtvochtigheid (%)", key: "humidityHistory", color: "#36a2eb", stepSize: 0.1, beginAtZero: true, suggestedMax: "100" },
+    luchtdruk: { label: "Luchtdruk (hPa)", key: "pressureHistory", color: "#4bc0c0", stepSize: 0.1, grace: "10%" },
 };
 
 let activeDataset = "temperatuur";
@@ -14,9 +14,9 @@ async function fetchData() {
     sensorData = await response.json();
 
     // update cards
-    document.getElementById("temperatuur").textContent    = sensorData.temperatuur + "°C";
+    document.getElementById("temperatuur").textContent = sensorData.temperatuur + "°C";
     document.getElementById("luchtvochtigheid").textContent = sensorData.luchtvochtigheid + "%";
-    document.getElementById("luchtdruk").textContent      = sensorData.luchtdruk + " hPa";
+    document.getElementById("luchtdruk").textContent = sensorData.luchtdruk + " hPa";
 
     updateChart();
 }
