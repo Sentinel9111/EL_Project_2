@@ -7,6 +7,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
+#include <time.h>
 
 #define BME_SCL 22
 #define BME_SDA 21
@@ -21,7 +22,7 @@ float humidityHistory[DATAPOINTS];
 float pressureHistory[DATAPOINTS];
 int historyIndex = 0;
 unsigned long startTime = 0;
-unsigned long lastTime;
+unsigned long lastTime = 0;
 unsigned long currentTime;
 unsigned long delayTime = 1000; // 3600000 for 1 hour
 unsigned long timestamps[DATAPOINTS];
@@ -44,8 +45,16 @@ void setup() {
         return;
     }
 
+	WiFi.onEvent([](WiFiEvent_t event) {
+    	if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+        	Serial.println("WiFi disconnected, reconnecting...");
+        	WiFi.reconnect();
+    	}
+	});
+
     setupWifi();
     setupServer();
+	setupTime();
     startTime = millis();
     lastTime = millis();
 }
@@ -65,7 +74,7 @@ void setupWifi() {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("\nIP: " + WiFi.localIP().toString());
+    Serial.println("\nIP: http://" + WiFi.localIP().toString());
 }
 
 void setupServer() {
@@ -105,6 +114,16 @@ void setupServer() {
     Serial.println("HTTP server started");
 }
 
+void setupTime() {
+	configTime(3600, 3600, "pool.ntp.org");
+    Serial.print("Syncing time");
+    while (time(nullptr) < 1000000000) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println(" OK");
+}
+
 void BMEValues() {
     float temperature = bme.readTemperature();
     float humidity = bme.readHumidity();
@@ -114,7 +133,7 @@ void BMEValues() {
     humidityHistory[historyIndex % DATAPOINTS] = humidity;
     pressureHistory[historyIndex % DATAPOINTS] = pressure;
 
-    timestamps[historyIndex % DATAPOINTS] = (millis() - startTime) / 1000; // 3600000 for 1 hour
+    timestamps[historyIndex % DATAPOINTS] = time(nullptr);
     historyIndex++;
 
     // print sensors to serial

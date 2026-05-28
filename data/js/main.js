@@ -25,8 +25,13 @@ function updateChart() {
     if (!sensorData) return;
 
     const ds = datasets[activeDataset];
+    document.getElementById("chartTitle").textContent = ds.label;
+
     let history = sensorData[ds.key];
-    const labels = sensorData.timestamps.map(h => "T+" + h + "u");
+    const labels = sensorData.timestamps.map(t => {
+        const d = new Date(t * 1000);
+        return d.toLocaleDateString("nl-NL", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" });
+    })
     history = history.map(value => {
         return parseFloat(Number(value).toFixed(ds.precision))
     })
