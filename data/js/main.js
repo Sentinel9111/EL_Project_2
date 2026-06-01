@@ -12,7 +12,7 @@ const datasets = {
 let activeDataset = "temperatuur";
 
 async function fetchData() {
-    const response = await fetch("/data");
+    const response = await fetch("/api/data");
     sensorData = await response.json();
 
     // update cards

@@ -75,6 +75,8 @@ void setup() {
         }
     });
 
+    Serial.println("--------------------------");
+
     startTime = millis();
     lastTime = millis();
 }
@@ -91,6 +93,8 @@ void loop() {
         turbidityValues();
         delay(50);
         riskCalculations();
+
+        Serial.println("--------------------------");
 
         timestamps[historyIndex % DATAPOINTS] = time(nullptr);
         historyIndex++;
@@ -135,8 +139,8 @@ void setupWifi() {
 }
 
 void setupServer() {
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("/index.html");
-    server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request) {
+    // api for sending data as json to webserver
+    server.on("/api/data", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
         json += "\"temperatuur\":" + String(temperature, 1) + ",";
         json += "\"luchtvochtigheid\":" + String(humidity, 0) + ",";
@@ -182,6 +186,14 @@ void setupServer() {
         request->send(200, "application/json", json);
     });
 
+    // shut stupid errors up
+    server.serveStatic("/", LittleFS, "/")
+        .setDefaultFile("/index.html")
+        .setCacheControl("max-age=86400") // Helpt tegen constante her-aanvragen
+        .setFilter([](AsyncWebServerRequest *request) {
+            return !request->url().startsWith("/api");
+        });
+
     server.begin();
     Serial.println("HTTP server started");
 }
@@ -211,11 +223,11 @@ void BMEValues() {
     humidityHistory[historyIndex % DATAPOINTS] = humidity;
     pressureHistory[historyIndex % DATAPOINTS] = pressure;
 
-    Serial.print("Air temperature: ");
+    Serial.print("Air temperature:   ");
     Serial.println(temperature);
-    Serial.print("Humidity: ");
+    Serial.print("Humidity:          ");
     Serial.println(humidity);
-    Serial.print("Pressure: ");
+    Serial.print("Pressure:          ");
     Serial.println(pressure);
 }
 
@@ -238,7 +250,7 @@ void turbidityValues() {
 
     turbidityHistory[historyIndex % DATAPOINTS] = turbidity;
 
-    Serial.print("Turbidity: ");
+    Serial.print("Turbidity:         ");
     Serial.println(turbidity);
 
     // lucht 2047 - turbidity 50
