@@ -14,7 +14,7 @@
 #define BME_SCL 22
 #define BME_SDA 21
 #define ONE_WIRE_BUS 16
-#define turbidity_pin 13
+#define turbidity_pin 34
 
 #define DATAPOINTS 168 // 168 for 7 days
 
@@ -38,7 +38,7 @@ int historyIndex = 0;
 unsigned long startTime = 0;
 unsigned long lastTime = 0;
 unsigned long currentTime;
-unsigned long delayTime = 1000; // 3600000 for 1 hour
+unsigned long delayTime = 60000; // 3600000 for 1 hour
 
 // sensors
 float temperature;
@@ -96,9 +96,6 @@ void setupBME() {
 
     if (!bme.begin(0x76, &Wire)) { // could be 0x77
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        while (true) {
-            delay(500);
-        }
     }
     Serial.println("BME280 sensor found");
 }
@@ -120,7 +117,7 @@ void setupWifi() {
         delay(500);
         Serial.print(".");
     }
-    Serial.println("\nIP: http://" + WiFi.localIP().toString());
+    Serial.println("\nIP: http://" + WiFi.localIP().toString() + "/");
 }
 
 void setupServer() {

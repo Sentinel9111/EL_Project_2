@@ -20,7 +20,7 @@ async function fetchData() {
     document.getElementById("luchtvochtigheid").textContent = sensorData.luchtvochtigheid + "%";
     document.getElementById("luchtdruk").textContent = sensorData.luchtdruk + " hPa";
     document.getElementById("watertemperatuur").textContent = sensorData.watertemperatuur + "°C";
-    document.getElementById("troebelheid").textContent = sensorData.troebelheid + "NTU";
+    document.getElementById("troebelheid").textContent = sensorData.troebelheid + " NTU";
 
     updateAdvies(
         "zwem",
@@ -108,7 +108,7 @@ function updateAdvies(type, risico, voorspelling) {
 
     // badge text and colour based on risk
     if (risico <= 20) {
-        badge.textContent = type === "zwem" ? "Zwemmen toegestaan" : "Goed voor vissen";
+        badge.textContent = type === "zwem" ? "Zwemmen aangeraden" : "Goed voor vissen";
         badge.className = "badge p-3 fs-4 bg-success text-dark";
         card.className = "card h-100 shadow-sm border-success";
     } else if (risico <= 50) {
@@ -145,4 +145,4 @@ document.querySelectorAll(".sensor-card").forEach(card => {
 
 // refresh
 fetchData();
-setInterval(fetchData, 5000);
+setInterval(fetchData, 30000); // 3600000 for 1 hour
