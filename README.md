@@ -1,6 +1,6 @@
 # Waterkwaliteitsboei
 
-`pio run -t uploadfs -t upload -t monitor`
+`pio run -t upload && pio run -t uploadfs && pio device monitor`
 
 ## Installatie
 

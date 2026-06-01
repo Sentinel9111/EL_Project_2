@@ -16,8 +16,8 @@
 
 //AsyncWebServer server(80);
 
-#define ONE_WIRE_BUS 16
-#define turbidity_pin 13
+#define ONE_WIRE_BUS 33
+#define turbidity_pin 32
 
 //water tempsensor
 OneWire oneWire(ONE_WIRE_BUS);

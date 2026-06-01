@@ -13,8 +13,8 @@
 
 #define BME_SCL 22
 #define BME_SDA 21
-#define ONE_WIRE_BUS 16
-#define turbidity_pin 34
+#define ONE_WIRE_BUS 33
+#define turbidity_pin 32
 
 #define DATAPOINTS 168 // 168 for 7 days
 
@@ -23,6 +23,7 @@ Adafruit_BME280 bme;
 AsyncWebServer server(80);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensor(&oneWire);
+bool bmeFound = false;
 
 // sensor datapoint arrays
 float temperatureHistory[DATAPOINTS];
@@ -38,7 +39,7 @@ int historyIndex = 0;
 unsigned long startTime = 0;
 unsigned long lastTime = 0;
 unsigned long currentTime;
-unsigned long delayTime = 60000; // 3600000 for 1 hour
+unsigned long delayTime = 5000; // 3600000 for 1 hour
 
 // sensors
 float temperature;
@@ -58,20 +59,21 @@ void setup() {
     delay(1000); // wait a second for serial monitor
     Serial.println(F("starting waterboei"));
 
-    pinMode(turbidity_pin, INPUT);
-
-	WiFi.onEvent([](WiFiEvent_t event) {
-    	if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-        	Serial.println("WiFi disconnected, reconnecting...");
-        	WiFi.reconnect();
-    	}
-	});
-
-    setupBME();
     setupLittleFS();
     setupWifi();
     setupTime();
     setupServer();
+
+    sensor.begin();
+    pinMode(turbidity_pin, INPUT);
+    setupBME();
+
+    WiFi.onEvent([](WiFiEvent_t event) {
+        if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+            Serial.println("WiFi disconnected, reconnecting...");
+            WiFi.reconnect();
+        }
+    });
 
     startTime = millis();
     lastTime = millis();
@@ -81,9 +83,13 @@ void loop() {
     currentTime = millis();
     if (currentTime - lastTime >= delayTime) {
         lastTime = currentTime;
+
         BMEValues();
+        delay(50);
         waterTempValues();
+        delay(50);
         turbidityValues();
+        delay(50);
         riskCalculations();
 
         timestamps[historyIndex % DATAPOINTS] = time(nullptr);
@@ -93,11 +99,19 @@ void loop() {
 
 void setupBME() {
     Wire.begin(BME_SDA, BME_SCL);
+    Wire.setTimeout(100);
 
-    if (!bme.begin(0x76, &Wire)) { // could be 0x77
-        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    // look for the BME280
+    if (bme.begin(0x76, &Wire)) {
+        Serial.println("Found BME280 sensor on 0x76");
+        bmeFound = true;
+    } else if (bme.begin(0x77, &Wire)) {
+        Serial.println("Found BME280 sensor on 0x77");
+        bmeFound = true;
+    } else {
+        Serial.println("BME280 sensor not found");
+        bmeFound = false;
     }
-    Serial.println("BME280 sensor found");
 }
 
 void setupLittleFS() {
@@ -121,7 +135,7 @@ void setupWifi() {
 }
 
 void setupServer() {
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("/index.html");
     server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
         json += "\"temperatuur\":" + String(temperature, 1) + ",";
@@ -183,13 +197,26 @@ void setupTime() {
 }
 
 void BMEValues() {
-    temperature = bme.readTemperature();
-    humidity = bme.readHumidity();
-    pressure = bme.readPressure() / 100.0F;
+    if (bmeFound) {
+        temperature = bme.readTemperature();
+        humidity = bme.readHumidity();
+        pressure = bme.readPressure() / 100.0F;
+    } else {
+        temperature = 0.0;
+        humidity = 0.0;
+        pressure = 0.0;
+    }
 
     temperatureHistory[historyIndex % DATAPOINTS] = temperature;
     humidityHistory[historyIndex % DATAPOINTS] = humidity;
     pressureHistory[historyIndex % DATAPOINTS] = pressure;
+
+    Serial.print("Air temperature: ");
+    Serial.println(temperature);
+    Serial.print("Humidity: ");
+    Serial.println(humidity);
+    Serial.print("Pressure: ");
+    Serial.println(pressure);
 }
 
 void waterTempValues() {
@@ -197,6 +224,9 @@ void waterTempValues() {
     waterTemperature = sensor.getTempCByIndex(0);
 
     waterTemperatureHistory[historyIndex % DATAPOINTS] = waterTemperature;
+
+    Serial.print("Water temperature: ");
+    Serial.println(waterTemperature);
 }
 
 void turbidityValues() {
@@ -207,6 +237,10 @@ void turbidityValues() {
     if( turbidity > 300) turbidity = 300;
 
     turbidityHistory[historyIndex % DATAPOINTS] = turbidity;
+
+    Serial.print("Turbidity: ");
+    Serial.println(turbidity);
+
     // lucht 2047 - turbidity 50
     // kraanwater 2380 - turbidity 0
     // troebel melk water 500 - turbidity 300
@@ -221,34 +255,26 @@ void riskCalculations() {
     // turbidity
     if (turbidity <= 5) {
         turbidityRisk += 0;
-    }
-    else if (turbidity <= 25) {
+    } else if (turbidity <= 25) {
         turbidityRisk += 20;
-    }
-    else if (turbidity <= 50) {
+    } else if (turbidity <= 50) {
         turbidityRisk += 50;
-    }
-    else if (turbidity <= 100) {
+    } else if (turbidity <= 100) {
         turbidityRisk += 80;
-    }
-    else {
+    } else {
         turbidityRisk += 100;
     }
 
     // water temp / outside temp
     if (waterTemperature <= 4) {
         tempRisk += 0;
-    }
-    else if (waterTemperature <= 10) {
+    } else if (waterTemperature <= 10) {
         tempRisk += 20;
-    }
-    else if (waterTemperature <= 16) {
+    } else if (waterTemperature <= 16) {
         tempRisk += 40;
-    }
-    else if (waterTemperature <= 20) {
+    } else if (waterTemperature <= 20) {
         tempRisk += 80;
-    }
-    else {
+    } else {
         tempRisk += 100;
     }
 
@@ -261,11 +287,9 @@ void riskCalculations() {
 
     if (tempDiff > 1) {
         riskPrediction = 1; // risico stijgt
-    }
-    else if (tempDiff < -1) {
+    } else if (tempDiff < -1) {
         riskPrediction = 2; // risico daalt
-    }
-    else {
+    } else {
         riskPrediction = 3; // risico blijft gelijk
-    } 
+    }
 }

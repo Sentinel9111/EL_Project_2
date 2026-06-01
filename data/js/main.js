@@ -145,4 +145,4 @@ document.querySelectorAll(".sensor-card").forEach(card => {
 
 // refresh
 fetchData();
-setInterval(fetchData, 30000); // 3600000 for 1 hour
+setInterval(fetchData, 5000); // 3600000 for 1 hour
