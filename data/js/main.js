@@ -35,7 +35,7 @@ async function fetchData() {
         sensorData.risicostijging
     );
     updateAdvies(
-        "algen",
+        "algengroei",
         sensorData.algengroei,
         sensorData.risicostijging
     );
