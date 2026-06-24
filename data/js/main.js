@@ -1,6 +1,7 @@
 let chart = null;
 let sensorData = null;
 
+// chart settings
 const datasets = {
     temperatuur: { label: "Luchttemperatuur (°C)", key: "temperatureHistory", color: "#ff6384", precision: 1, stepSize: 0.1 },
     luchtvochtigheid: { label: "Luchtvochtigheid (%)", key: "humidityHistory", color: "#36a2eb", precision: 0, beginAtZero: true, suggestedMax: 100 },
@@ -11,6 +12,7 @@ const datasets = {
 
 let activeDataset = "temperatuur";
 
+// fetch data from ESP32
 async function fetchData() {
     const response = await fetch("/api/data");
     sensorData = await response.json();
@@ -31,27 +33,34 @@ async function fetchData() {
         "vis",
         sensorData.visrisico,
         sensorData.risicostijging
-    )
-
+    );
+    updateAdvies(
+        "algen",
+        sensorData.algengroei,
+        sensorData.risicostijging
+    );
 
     updateChart();
 }
 
+// update chart.js chart
 function updateChart() {
     if (!sensorData) return;
-
+    // retrieve chart title
     const ds = datasets[activeDataset];
     document.getElementById("chartTitle").textContent = ds.label;
-
+    // retrieve history arrays
     let history = sensorData[ds.key];
+    // retrieve date and time
     const labels = sensorData.timestamps.map(t => {
         const d = new Date(t * 1000);
         return d.toLocaleDateString("nl-NL", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" });
     })
+    // round numbers
     history = history.map(value => {
         return parseFloat(Number(value).toFixed(ds.precision))
     })
-
+    // import chart settings
     if (chart) {
         chart.data.labels = labels;
         chart.data.datasets[0].data = history;
@@ -98,6 +107,7 @@ function updateChart() {
     }
 }
 
+// update advice cards
 function updateAdvies(type, risico, voorspelling) {
     const card   = document.getElementById(type + "adviesCard");
     const badge  = document.getElementById(type + "adviesBadge");
@@ -107,16 +117,32 @@ function updateAdvies(type, risico, voorspelling) {
     risicoEl.textContent = risico;
 
     // badge text and colour based on risk
-    if (risico <= 20) {
-        badge.textContent = type === "zwem" ? "Zwemmen aangeraden" : "Goed voor vissen";
+    if (risico <= 15) { // 1 1 1
+        badge.textContent = type === "zwem" ? "Uitstekend om in te zwemmen." : type === "vis" ? "Uitstekend voor vissen." : "Zeer lage kans op algengroei.";
         badge.className = "badge p-3 fs-4 bg-success text-dark";
         card.className = "card h-100 shadow-sm border-success";
-    } else if (risico <= 50) {
-        badge.textContent = type === "zwem" ? "Zwem voorzichtig" : "Matig voor vissen";
+    } else if (risico <= 20) { // 2 1 1
+        badge.textContent = type === "zwem" ? "Goed om in te zwemmen." : type === "vis" ? "Uitstekend voor vissen." : "Zeer lage kans op algengroei.";
+        badge.className = "badge p-3 fs-4 bg-warning text-dark";
+        card.className = "card h-100 shadow-sm border-success";
+    } else if (risico <= 35) { // 2 2 2
+        badge.textContent = type === "zwem" ? "Goed om in te zwemmen." : type === "vis" ? "Goed voor vissen." : "Lage kans op algengroei.";
+        badge.className = "badge p-3 fs-4 bg-warning text-dark";
+        card.className = "card h-100 shadow-sm border-success";
+    } else if (risico <= 40) { // 3 2 2
+        badge.textContent = type === "zwem" ? "Redelijk, houd de waterkwaliteit in de gaten." : type === "vis" ? "Goed voor vissen." : "Lage kans op algengroei.";
         badge.className = "badge p-3 fs-4 bg-warning text-dark";
         card.className = "card h-100 shadow-sm border-warning";
-    } else {
-        badge.textContent = type === "zwem" ? "Zwemmen afgeraden" : "Slecht voor vissen";
+    } else if (risico <= 60) { // 3 3 3
+        badge.textContent = type === "zwem" ? "Redelijk, houd de waterkwaliteit in de gaten." : type === "vis" ? "Kan lichte stress veroorzaken voor vissen." : "Algengroei is mogelijk.";
+        badge.className = "badge p-3 fs-4 bg-warning text-dark";
+        card.className = "card h-100 shadow-sm border-warning";
+    } else if (risico <= 80) { // 4 4 4
+        badge.textContent = type === "zwem" ? "Zwemmen wordt afgeraden." : type === "vis" ? "Ongezond voor vissen." : "Verhoogde kans op algengroei.";
+        badge.className = "badge p-3 fs-4 bg-warning text-dark";
+        card.className = "card h-100 shadow-sm border-danger";
+    } else { // 5 5 5
+        badge.textContent = type === "zwem" ? "Ongeschikt om in te zwemmen." : type === "vis" ? "Gevaarlijk voor vissen." : "Grote kans op algengroei.";
         badge.className = "badge p-3 fs-4 bg-danger text-dark";
         card.className = "card h-100 shadow-sm border-danger";
     }

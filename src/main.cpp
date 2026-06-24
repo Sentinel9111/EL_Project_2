@@ -52,8 +52,10 @@ int turbidity;
 float tempDiff;
 int swimRisk = 0;
 int fishRisk = 0;
+int algaeGrowRisk = 0;
 byte riskPrediction = 0;
 
+// bootup sequence
 void setup() {
     Serial.begin(115200);
     delay(1000); // wait a second for serial monitor
@@ -64,10 +66,12 @@ void setup() {
     setupTime();
     setupServer();
 
+    // initialise sensors
     sensor.begin();
     pinMode(TURBIDITY_PIN, INPUT);
     setupBME();
 
+    // reconnect Wi-Fi on disconnect
     WiFi.onEvent([](WiFiEvent_t event) {
         if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
             Serial.println("WiFi disconnected, reconnecting...");
@@ -77,15 +81,18 @@ void setup() {
 
     Serial.println("--------------------------");
 
+    // initialise non-blocking delays
     startTime = millis();
     lastTime = millis();
 }
 
 void loop() {
+    // non-blocking delay
     currentTime = millis();
     if (currentTime - lastTime >= delayTime) {
         lastTime = currentTime;
 
+        // call all sensor functions
         BMEValues();
         delay(50);
         waterTempValues();
@@ -96,6 +103,7 @@ void loop() {
 
         Serial.println("--------------------------");
 
+        // save time history
         timestamps[historyIndex % DATAPOINTS] = time(nullptr);
         historyIndex++;
     }
@@ -118,7 +126,9 @@ void setupBME() {
     }
 }
 
+// setup file system
 void setupLittleFS() {
+    // initialise LittleFS
     if (!LittleFS.begin()) {
         Serial.println("Failed to initialize LittleFS");
         while (true) {
@@ -129,6 +139,7 @@ void setupLittleFS() {
 }
 
 void setupWifi() {
+    // connect to Wi-Fi network
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("Connecting");
     while (WiFi.status() != WL_CONNECTED) {
@@ -140,6 +151,7 @@ void setupWifi() {
 
 void setupServer() {
     // api for sending data as json to webserver
+    // starts up webserver converts sensor data to json and sends it to the webserver
     server.on("/api/data", HTTP_GET, [](AsyncWebServerRequest *request) {
         String json = "{";
         json += "\"temperatuur\":" + String(temperature, 1) + ",";
@@ -149,6 +161,7 @@ void setupServer() {
         json += "\"troebelheid\":" + String(turbidity) + ",";
         json += "\"zwemrisico\":" + String(swimRisk) + ",";
         json += "\"visrisico\":" + String(fishRisk) + ",";
+        json += "\"algengroei\":" + String(algaeGrowRisk) + ",";
         json += "\"risicostijging\":" + String(riskPrediction) + ",";
         json += "\"temperatureHistory\":[";
         int count = min(historyIndex, DATAPOINTS);
@@ -199,6 +212,7 @@ void setupServer() {
 }
 
 void setupTime() {
+    // get time for time server
 	configTime(3600, 3600, "pool.ntp.org");
     Serial.print("Syncing time");
     while (time(nullptr) < 1000000000) {
@@ -209,6 +223,7 @@ void setupTime() {
 }
 
 void BMEValues() {
+    // read BME280 values
     if (bmeFound) {
         temperature = bme.readTemperature();
         humidity = bme.readHumidity();
@@ -219,6 +234,7 @@ void BMEValues() {
         pressure = 0.0;
     }
 
+    // save BME280 values in history array
     temperatureHistory[historyIndex % DATAPOINTS] = temperature;
     humidityHistory[historyIndex % DATAPOINTS] = humidity;
     pressureHistory[historyIndex % DATAPOINTS] = pressure;
@@ -232,9 +248,11 @@ void BMEValues() {
 }
 
 void waterTempValues() {
+    // read water temperature sensor values
     sensor.requestTemperatures();
     waterTemperature = sensor.getTempCByIndex(0);
 
+    // save values in history array
     waterTemperatureHistory[historyIndex % DATAPOINTS] = waterTemperature;
 
     Serial.print("Water temperature: ");
@@ -242,61 +260,69 @@ void waterTempValues() {
 }
 
 void turbidityValues() {
+    // read turbidity sensor values
     int sensValue = analogRead(TURBIDITY_PIN);
-
+    // calculate actual NTU value
     turbidity = ((2380.0 - sensValue) / (2380.0 - 500.0)) * 300.0;
     if( turbidity < 0 ) turbidity = 0;
     if( turbidity > 300) turbidity = 300;
 
+    // save values in history array
     turbidityHistory[historyIndex % DATAPOINTS] = turbidity;
 
     Serial.print("Turbidity:         ");
     Serial.println(turbidity);
-
-    // lucht 2047 - turbidity 50
-    // kraanwater 2380 - turbidity 0
-    // troebel melk water 500 - turbidity 300
 }
 
 void riskCalculations() {
     swimRisk = 0;
     fishRisk = 0;
+    algaeGrowRisk = 0;
     int tempRisk = 0;
     int turbidityRisk = 0;
 
-    // turbidity
-    if (turbidity <= 5) {
+    // calculate turbidity risk
+    if (turbidity <= 1) {
         turbidityRisk += 0;
-    } else if (turbidity <= 25) {
-        turbidityRisk += 20;
-    } else if (turbidity <= 50) {
-        turbidityRisk += 50;
-    } else if (turbidity <= 100) {
+    } else if (turbidity <= 5) {
+        turbidityRisk += 10;
+    } else if (turbidity <= 10) {
+        turbidityRisk += 30;
+    } else if (turbidity <= 20) {
+        turbidityRisk += 60;
+    } else  if (turbidity <= 45) {
         turbidityRisk += 80;
     } else {
         turbidityRisk += 100;
     }
 
-    // water temp / outside temp
+    // calculate water temperature risk
     if (waterTemperature <= 4) {
         tempRisk += 0;
     } else if (waterTemperature <= 10) {
-        tempRisk += 20;
+        tempRisk += 15;
     } else if (waterTemperature <= 16) {
-        tempRisk += 40;
+        tempRisk += 35;
     } else if (waterTemperature <= 20) {
-        tempRisk += 80;
+        tempRisk += 55;
+    } else if (waterTemperature <= 25) {
+        tempRisk += 70;
     } else {
         tempRisk += 100;
     }
 
+    // calculate temperature difference risk
     tempDiff = temperature - waterTemperature;
-    if (tempDiff > 1 ) tempRisk += 10;
-    else if (tempDiff < -1) { tempRisk -= 10;}
+    if (tempDiff > 2 ) tempRisk += 5;
+    else if (tempDiff < -5) { tempRisk -= 5;}
+    tempRisk = constrain(tempRisk, 0, 100);
 
-    swimRisk = tempRisk * 0.4 + turbidityRisk * 0.6; // turbidity belangrijker voor zwemmers
+    // calculate swimRisk, fishRisk and algaeGrowRisk
+    swimRisk = tempRisk * 0.1 + turbidityRisk * 0.9; // turbidity belangrijker voor zwemmers
     fishRisk = tempRisk * 0.7 + turbidityRisk * 0.3; // temp belangrijker voor vissen
+    algaeGrowRisk = tempRisk * 0.6 + turbidityRisk * 0.4;
 
+    // calculate risk prediction
     if (tempDiff > 1) {
         riskPrediction = 1; // risico stijgt
     } else if (tempDiff < -1) {
