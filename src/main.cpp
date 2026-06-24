@@ -14,7 +14,7 @@
 #define BME_SCL 22
 #define BME_SDA 21
 #define ONE_WIRE_BUS 33
-#define turbidity_pin 32
+#define TURBIDITY_PIN 32
 
 #define DATAPOINTS 168 // 168 for 7 days
 
@@ -65,7 +65,7 @@ void setup() {
     setupServer();
 
     sensor.begin();
-    pinMode(turbidity_pin, INPUT);
+    pinMode(TURBIDITY_PIN, INPUT);
     setupBME();
 
     WiFi.onEvent([](WiFiEvent_t event) {
@@ -242,7 +242,7 @@ void waterTempValues() {
 }
 
 void turbidityValues() {
-    int sensValue = analogRead(turbidity_pin);
+    int sensValue = analogRead(TURBIDITY_PIN);
 
     turbidity = ((2380.0 - sensValue) / (2380.0 - 500.0)) * 300.0;
     if( turbidity < 0 ) turbidity = 0;
